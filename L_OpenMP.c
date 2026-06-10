@@ -15,15 +15,15 @@ void calc_jmin_jmax(int* index, unsigned long long int* jMin, unsigned long long
 void LM(int_type* mtx_as_vec, unsigned long long int steps, unsigned long long int steps_remainder, int_type *L1_vector, int *L1_strategy, int iShorter, int iLonger){ // This function calculates the L1 norm.
 	int i, l, index, vect[NUM_OF_BITS - 1];
 	int_type temp[length], product, L1;
-	unsigned long long int number, jMax, jMin, iNumofZeros, aux;
+	unsigned long long int number, jMax, jMin, aux, gray;
 	index = omp_get_thread_num(); // Index of threads.
 	calc_jmin_jmax(&index, &jMin, &jMax, &steps, &steps_remainder); // This function calculates the minimal (jMin-th) and the maximal (jMax-th) word of the binary reflected Gray code for which the calculations must be performed by a given thread.
 	number = jMin;
 	for(l=0; l < iLonger; l++) {temp[l] = mtx_as_vec[(iShorter - 1) * iLonger + l];} // As the code can consider a row of the matrix with a fixed sign, it considers the last row of the matrix with +1.
 	product = 0;
+	gray = number ^ (number >> 1);
 	for(i = 0 ; (iShorter - 1) > i; i++){
-		iNumofZeros=(unsigned long long int) 1 << i;
-		vect[i] = ((number+ iNumofZeros) >> (i+1)) & 1; // floor((j + 2^i)/2^(i+1)) Logical can be 0 and 1. logical is the number-th word and i-th digit of the BRGC.
+		vect[i] = (gray >> i) & 1;
 		if(vect[i] == 1){for(l=0; l < iLonger; l++){temp[l] += mtx_as_vec[i * iLonger + l]; }} // The code determines the vector-matrix multiplication belonging to the number-th word of the BRGC.
 		else {for(l=0; l < iLonger; l++){temp[l] -= mtx_as_vec[i * iLonger + l]; }}				
 	}
@@ -50,7 +50,7 @@ void LM(int_type* mtx_as_vec, unsigned long long int steps, unsigned long long i
 void L1(int_type* mtx_as_vec, unsigned long long int steps, unsigned long long int steps_remainder, int_type *L1_vector, int *L1_strategy, int iShorter, int iLonger){ // This function calculates the L1 norm.
 	int i, l, index, vect[NUM_OF_BITS - 1];
 	int_type temp[length], product, L1;
-	unsigned long long int number, jMax, jMin, iNumofZeros, aux;
+	unsigned long long int number, jMax, jMin, aux, gray;
 
 	index = omp_get_thread_num(); // Index of threads.
 	calc_jmin_jmax(&index, &jMin, &jMax, &steps, &steps_remainder); // This function calculates the minimal (jMin-th) and the maximal (jMax-th) word of the binary reflected Gray code for which the calculations must be performed by a given thread.
@@ -58,9 +58,9 @@ void L1(int_type* mtx_as_vec, unsigned long long int steps, unsigned long long i
 	number = jMin;
 	for(l=0; l < iLonger; l++) {temp[l] = mtx_as_vec[(iShorter - 1) * iLonger + l];} // As the code can consider a row of the matrix with a fixed sign, it considers the last row of the matrix with +1.
 	product = 0;
+	gray = number ^ (number >> 1);
 	for(i = 0 ; (iShorter - 1) > i; i++){
-		iNumofZeros=(unsigned long long int) 1 << i;
-		vect[i] = ((number+ iNumofZeros) >> (i+1)) & 1; // floor((j + 2^i)/2^(i+1)) Logical can be 0 and 1. logical is the number-th word and i-th digit of the BRGC.
+		vect[i] = (gray >> i) & 1;
 		if(vect[i] == 1){for(l=0; l < iLonger; l++){temp[l] += mtx_as_vec[i * iLonger + l]; }} // The code determines the vector-matrix multiplication belonging to the number-th word of the BRGC.
 		else {for(l=0; l < iLonger; l++){temp[l] -= mtx_as_vec[i * iLonger + l]; }}				
 	}
@@ -87,7 +87,7 @@ void L1(int_type* mtx_as_vec, unsigned long long int steps, unsigned long long i
 void L2(int_type* mtx_as_vec, unsigned long long int steps, unsigned long long int steps_remainder, int_type *L2_vector, int *L2_strategy, int iRows, int iCols){ // This function calculates the L2 norm.
 	int i, l, index, vect[NUM_OF_BITS - 1];
 	int_type temp_0[length], temp_1[length], product, L2;
-	unsigned long long int number, jMax, jMin, iNumofZeros, aux;
+	unsigned long long int number, jMax, jMin, aux, gray;
 
 	index = omp_get_thread_num(); // Index of threads.
 
@@ -96,9 +96,9 @@ void L2(int_type* mtx_as_vec, unsigned long long int steps, unsigned long long i
 	number = jMin;
 	for(l=0; l < iCols; l++) {temp_0[l] = mtx_as_vec[(iRows-1) * iCols + l]; temp_1[l] = 0; } // As the code can consider a row of the matrix with a fixed label, it considers the last row of the matrix with 0.
 	product = 0;
+	gray = number ^ (number >> 1);
 	for(i = 0 ; (iRows-1) > i; i++){
-		iNumofZeros=(unsigned long long int) 1 << i;
-		vect[i] = ((number+ iNumofZeros) >> (i+1)) & 1; // floor((j + 2^i)/2^(i+1)) Logical can be 0 and 1. logical is the number-th word and i-th digit of the BRGC.
+		vect[i] = (gray >> i) & 1;
 			if(vect[i] == 1){for(l=0; l < iCols; l++){temp_1[l] += mtx_as_vec[i * iCols + l]; }}
 			else {for(l=0; l < iCols; l++){temp_0[l] += mtx_as_vec[i * iCols + l]; }}				
 	}
